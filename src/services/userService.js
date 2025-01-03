@@ -116,24 +116,44 @@ class UserService extends BaseService {
     }
   }
 
-  async updateUser(userId, userData) {
+  async updateUser(userId, updateData) {
     try {
-      const { firstName, lastName, email, phone, address, avatar } = userData;
-      
-      // Ana kullanıcı bilgilerini güncelle
-      const updatedUser = await this.update(userId, {
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
-        avatar
-      });
+      // MongoDB ObjectId kontrolü
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error('Geçersiz kullanıcı ID');
+      }
 
-      // Güncel kullanıcı bilgilerini detaylarıyla birlikte getir
-      return await this.getUserDetails(userId);
+      // Güncelleme işlemi
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { 
+          new: true, // Güncellenmiş veriyi döndür
+          runValidators: true // Şema validasyonlarını çalıştır
+        }
+      ).select('-password'); // Şifreyi çıkar
+
+      if (!updatedUser) {
+        throw new Error('Kullanıcı bulunamadı');
+      }
+
+      // Kullanıcı rolüne göre ek detayları getir
+      let details = null;
+      if (updatedUser.role === 'driver') {
+        details = await Driver.findOne({ user: userId });
+      } else if (updatedUser.role === 'shipper') {
+        details = await Shipper.findOne({ user: userId });
+      }
+
+      // Kullanıcı ve detayları birleştir
+      const userWithDetails = {
+        ...updatedUser.toObject(),
+        details: details ? details.toObject() : null
+      };
+
+      return userWithDetails;
     } catch (error) {
-      logger.error('Kullanıcı güncellenirken hata:', error);
+      logger.error('updateUser error:', error);
       throw error;
     }
   }

@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
+const UserController = require('../controllers/userController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-router.get('/', authMiddleware, userController.getAllUsers);
-router.put('/:userId', authMiddleware, userController.updateUser);
+// Profil güncelleme için özel route
+router.put('/profile', authMiddleware, UserController.updateProfile);
+
+// Diğer user routes
+router.get('/', authMiddleware, UserController.getAllUsers);
+router.put('/:userId', authMiddleware, UserController.updateUser);
 
 module.exports = router; 

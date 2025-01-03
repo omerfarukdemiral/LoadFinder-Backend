@@ -16,8 +16,14 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
   phone: {
+    type: String
+  },
+  address: {
+    type: String
+  },
+  avatar: {
     type: String,
-    required: true
+    default: 'https://mwondkyurmrltkfhnfhu.supabase.co/storage/v1/object/public/LoadFinder/profile-pictures/avatar.png'
   },
   role: {
     type: String,
@@ -29,7 +35,6 @@ const userSchema = new mongoose.Schema({
     enum: ['active', 'inactive', 'suspended'],
     default: 'active'
   },
-  avatar: String,
   registrationDate: {
     type: Date,
     default: Date.now
